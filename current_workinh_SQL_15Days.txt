@@ -1,0 +1,57 @@
+with ct as(
+select * 
+from(
+select hacker_id, submission_date,
+           row_number() over (partition by hacker_id order by submission_date) as row_num,
+           day(submission_date) as day_num, 
+           (row_number() over (partition by hacker_id order by submission_date)
+           - day(submission_date)) as diff
+    from submissions) as t
+where t.diff = 0)
+
+select submission_date, count(distinct(hacker_id))
+from ct
+group by submission_date
+----------------Part-2----------
+select * from
+(select * 
+from(
+select submission_date, hacker_id, cnt,
+       row_number() over (partition by submission_date order by cnt desc, hacker_id) as row_cnt
+from (select submission_date, hacker_id, count(submission_id) as cnt
+from submissions
+group by hacker_id, submission_date) as sub1) as sub2
+where row_cnt = 1) as sub3
+join hackers as h
+on sub3.hacker_id = h.hacker_id
+_________________________________Final_________________________________________________
+select t2.submission_date, t2.cnt_h_id, sub4.h3_id, sub4.name
+from(
+select submission_date, count(hacker_id) as cnt_h_id from(
+select * from (
+select hacker_id, submission_date,
+           row_number() over (partition by hacker_id order by submission_date) as row_num,
+           day(submission_date) as day_num, 
+           (row_number() over (partition by hacker_id order by submission_date)
+           - day(submission_date)) as diff
+from(
+select hacker_id, submission_date, count(*) as nouse
+from submissions
+group by hacker_id, submission_date) as sub0) as sd
+where sd.diff = 0) as subdate
+group by submission_date) as t2
+join
+(select submission_date, sub3.hacker_id as h3_id, name from
+(select * 
+from(
+select submission_date, hacker_id, cnt,
+       row_number() over (partition by submission_date order by cnt desc, hacker_id) as row_cnt
+from (select submission_date, hacker_id, count(submission_id) as cnt
+from submissions
+group by hacker_id, submission_date) as sub1) as sub2
+where row_cnt = 1) as sub3
+join hackers as h
+on sub3.hacker_id = h.hacker_id) as sub4
+on t2.submission_date = sub4.submission_date
+------------------------------------------------------------------------------------------------
+
